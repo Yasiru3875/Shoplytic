@@ -9,7 +9,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 const PORT = 3005;
-const MONGO_URI = 'mongodb://localhost:27017/ecommerce_notifications';
+const MONGO_URI = 'mongodb+srv://samarakoonsarith:sariya123@cluster0.mqo6ik9.mongodb.net/Shoplytic_db?appName=Cluster0';
 
 app.use(cors());
 app.use(morgan('dev'));
