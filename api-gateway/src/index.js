@@ -155,6 +155,7 @@ const swaggerOptions = {
           responses: { 200: { description: 'Payment refunded' } } }
       },
       '/api/notifications': {
+        get: { tags: ['Notifications'], summary: 'Get all notifications', responses: { 200: { description: 'List of all notifications' } } },
         post: { tags: ['Notifications'], summary: 'Send notification',
           requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/NotificationInput' } } } },
           responses: { 201: { description: 'Notification sent' } } }
@@ -163,6 +164,16 @@ const swaggerOptions = {
         get: { tags: ['Notifications'], summary: 'Get notifications for user',
           parameters: [{ in: 'path', name: 'userId', required: true, schema: { type: 'string' } }],
           responses: { 200: { description: 'Notifications list' } } }
+      },
+      '/api/notifications/{id}/read': {
+        put: { tags: ['Notifications'], summary: 'Mark notification as read',
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Marked as read' } } }
+      },
+      '/api/notifications/{id}': {
+        delete: { tags: ['Notifications'], summary: 'Delete a notification',
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Notification deleted' } } }
       },
     },
     components: {
