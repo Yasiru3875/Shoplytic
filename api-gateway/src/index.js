@@ -1,5 +1,5 @@
 const express = require('express');
-const { createProxyMiddleware } = require('http-proxy-middleware');
+const { createProxyMiddleware, fixRequestBody } = require('http-proxy-middleware');
 const cors = require('cors');
 const morgan = require('morgan');
 const swaggerUi = require('swagger-ui-express');
@@ -31,6 +31,7 @@ Object.entries(SERVICES).forEach(([name, target]) => {
     target,
     changeOrigin: true,
     pathRewrite: { [`^/api/${name}`]: `/${name}` },
+    onProxyReq: fixRequestBody,
   });
 
   // Handle downstream service being unavailable
@@ -60,6 +61,11 @@ const swaggerOptions = {
     },
     servers: [
       { url: 'http://localhost:3000', description: 'API Gateway' },
+      { url: 'http://localhost:3001', description: 'User-Service' },
+      { url: 'http://localhost:3002', description: 'Product-Service' },
+      { url: 'http://localhost:3003', description: 'Order-Service' },
+      { url: 'http://localhost:3004', description: 'Payment-Service' },
+      { url: 'http://localhost:3005', description: 'Notification-Service' },
     ],
     tags: [
       { name: 'Users',         description: 'User management (→ port 3001)' },
@@ -79,11 +85,19 @@ const swaggerOptions = {
           requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/LoginInput' } } } },
           responses: { 200: { description: 'Login successful' } } }
       },
+      '/api/users': {
+        get: { tags: ['Users'], summary: 'Get all users',
+          responses: { 200: { description: 'List of all users' } } }
+      },
       '/api/users/{id}': {
         get: { tags: ['Users'], summary: 'Get user by ID',
           parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
-          responses: { 200: { description: 'User found' } } }
+          responses: { 200: { description: 'User found' } } },
+        delete: { tags: ['Users'], summary: 'Delete user by ID',
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'User deleted' } } }
       },
+      
       '/api/products': {
         get:  { tags: ['Products'], summary: 'Get all products', responses: { 200: { description: 'List of products' } } },
         post: { tags: ['Products'], summary: 'Create product',
@@ -103,6 +117,7 @@ const swaggerOptions = {
           responses: { 200: { description: 'Product deleted' } } }
       },
       '/api/orders': {
+        get:  { tags: ['Orders'], summary: 'Get all orders', responses: { 200: { description: 'List of all orders' } } },
         post: { tags: ['Orders'], summary: 'Create order',
           requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/OrderInput' } } } },
           responses: { 201: { description: 'Order created' } } }
@@ -112,12 +127,19 @@ const swaggerOptions = {
           parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
           responses: { 200: { description: 'Order found' } } }
       },
+      '/api/orders/{id}/status': {
+        put: { tags: ['Orders'], summary: 'Update order status',
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', enum: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'] } } } } } },
+          responses: { 200: { description: 'Status updated' } } }
+      },
       '/api/orders/user/{userId}': {
         get: { tags: ['Orders'], summary: 'Get orders by user',
           parameters: [{ in: 'path', name: 'userId', required: true, schema: { type: 'string' } }],
           responses: { 200: { description: 'Orders list' } } }
       },
       '/api/payments': {
+        get: { tags: ['Payments'], summary: 'Get all payments', responses: { 200: { description: 'List of all payments' } } },
         post: { tags: ['Payments'], summary: 'Process payment',
           requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/PaymentInput' } } } },
           responses: { 201: { description: 'Payment processed' } } }
@@ -126,6 +148,11 @@ const swaggerOptions = {
         get: { tags: ['Payments'], summary: 'Get payment by order ID',
           parameters: [{ in: 'path', name: 'orderId', required: true, schema: { type: 'string' } }],
           responses: { 200: { description: 'Payment found' } } }
+      },
+      '/api/payments/{id}/refund': {
+        put: { tags: ['Payments'], summary: 'Refund a payment',
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Payment refunded' } } }
       },
       '/api/notifications': {
         post: { tags: ['Notifications'], summary: 'Send notification',
