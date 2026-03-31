@@ -1,7 +1,7 @@
 {
-  "name": "api-gateway",
+  "name": "payment-service",
   "version": "1.0.0",
-  "description": "API Gateway for E-Commerce Microservices",
+  "description": "Payment Service — E-Commerce Microservices",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "http-proxy-middleware": "^2.0.6",
+    "mongoose": "^8.0.3",
     "cors": "^2.8.5",
     "morgan": "^1.10.0",
     "swagger-ui-express": "^5.0.0",
